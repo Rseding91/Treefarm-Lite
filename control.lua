@@ -18,6 +18,10 @@ function initialise()
 			global.tf.playersData[pIndex].overlayStack = {}
 		end
 	end
+	for i = 0, 60 do
+		global.tf.fieldsToMaintain[i] = {}
+		global.tf.fieldmk2sToMaintain[i] = {}
+	end
 end
 
 local seedTypeLookUpTable = {}
@@ -173,7 +177,7 @@ script.on_event(defines.events.on_built_entity, function(event)
         fertAmount = 0,
         lastSeedPos = {x = 2, y = 0}
       }
-	  local nextUpdate = event.tick + 60
+	  local nextUpdate = event.tick % 60
 	  table.insert(global.tf.fieldList, entInfo)
       insertField(entInfo, nextUpdate)
       return
@@ -191,9 +195,9 @@ script.on_event(defines.events.on_built_entity, function(event)
       lastSeedPos = {x = -9, y = -9},
       toBeHarvested = {}
     }
-	local nextUpdate = event.tick + 60
+	local updateBucket = event.tick % 60
 	table.insert(global.tf.fieldList, entInfo)
-	insertFieldmk2(entInfo, nextUpdate)
+	insertFieldmk2(entInfo, updateBucket)
     showFieldmk2GUI(#global.tf.fieldList, event.player_index)
     global.tf.playersData[event.player_index].guiOpened = entInfo.entity
     event.created_entity.destroy()
@@ -231,7 +235,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
         fertAmount = 0,
         lastSeedPos = {x = 2, y = 0}
       }
-	  local nextUpdate = event.tick + 60
+	  local nextUpdate = event.tick % 60
 	  insertField(entInfo, nextUpdate)
       return
     end
@@ -251,7 +255,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
       lastSeedPos = {x = -9, y = -9},
       toBeHarvested = {}
     }
-	local nextUpdate = event.tick + 60
+	local nextUpdate = event.tick % 60
 	insertFieldmk2(entInfo, nextUpdate)
     event.created_entity.destroy()
     return
@@ -264,14 +268,14 @@ script.on_event(defines.events.on_tick, function(event)
 		global.tf.treesToGrow[event.tick] = nil
 	end
 	
-	if global.tf.fieldsToMaintain[event.tick] ~= nil then
-		fieldMaintainer(event.tick)
-		global.tf.fieldsToMaintain[event.tick] = nil
+	local updateBucket = event.tick % 60
+	
+	if global.tf.fieldsToMaintain[updateBucket] ~= nil then
+		fieldMaintainer(updateBucket)
 	end
 	
-	if global.tf.fieldmk2sToMaintain[event.tick] ~= nil then
-		fieldmk2Maintainer(event.tick)
-		global.tf.fieldmk2sToMaintain[event.tick] = nil
+	if global.tf.fieldmk2sToMaintain[updateBucket] ~= nil then
+		fieldmk2Maintainer(updateBucket)
 	end
 end)
 
@@ -637,8 +641,7 @@ function fieldMaintainer(tick)
 					end
 				end
 			end
-			local nextUpdate = tick + 60
-			insertField(fieldObj, nextUpdate)
+			insertField(fieldObj, tick)
 		end
 	end
 end
