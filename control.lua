@@ -175,7 +175,7 @@ end
 
 function tickTrees(tick)
   if global.trees[tick] == nil then
-    eturn
+    return
   end
 
   for k,v in pairs(global.trees[tick]) do
